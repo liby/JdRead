@@ -1,8 +1,12 @@
 {
-  "name": "pake",
+  "name": "jd-read",
+  "packageManager": "yarn@3.2.4",
+  "engines": {
+    "node": ">=16.16"
+  },
   "scripts": {
-    "dev": "TAURI_SKIP_DEVSERVER_CHECK=true npm run tauri dev",
-    "build": "TAURI_SKIP_DEVSERVER_CHECK=true npm run tauri build -- --target universal-apple-darwin",
+    "dev": "TAURI_SKIP_DEVSERVER_CHECK=true tauri dev",
+    "build": "TAURI_SKIP_DEVSERVER_CHECK=true tauri build -- --target universal-apple-darwin",
     "tauri": "tauri"
   },
   "license": "MIT",
