@@ -6,7 +6,7 @@
   },
   "scripts": {
     "dev": "TAURI_SKIP_DEVSERVER_CHECK=true tauri dev",
-    "build": "TAURI_SKIP_DEVSERVER_CHECK=true tauri build --target universal-apple-darwin",
+    "build": "mkdir dist && TAURI_SKIP_DEVSERVER_CHECK=true tauri build --target universal-apple-darwin",
     "tauri": "tauri"
   },
   "license": "MIT",

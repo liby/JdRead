@@ -37,13 +37,13 @@ fn main() -> wry::Result<()> {
     let script = r#"
   (function () {
     window.addEventListener('DOMContentLoaded', (event) => {
-      const style = document.createElement('style');
-      .c-swiper-container{
-        display:none;
-      }
-        .panel.give_me .nav_view {
+      const sheet = document.createElement('style');
+      sheet.innerHTML = `
+        .panel .give_me .nav_view {
           top: 154px !important;
         }
+        
+        .c-swiper-container,
         .download_entry,
         .lang,
         .copyright {
@@ -66,20 +66,19 @@ fn main() -> wry::Result<()> {
           cursor: -webkit-grab;
         }
       `;
-      document.head.append(style);
+      document.head.append(sheet);
+      
       const topDom = document.createElement("div");
       topDom.id = "pack-top-dom"
       document.body.appendChild(topDom);
-
-      const domEl = document.getElementById('pack-top-dom');
-
-      domEl.addEventListener('mousedown', (e) => {
+     
+      topDom.addEventListener('mousedown', (e) => {
         if (e.buttons === 1 && e.detail !== 2) {
           window.ipc.postMessage('drag_window');
         }
       })
 
-      domEl.addEventListener('touchstart', (e) => {
+      topDom.addEventListener('touchstart', (e) => {
           window.ipc.postMessage('drag_window');
       })
     });
@@ -90,10 +89,10 @@ fn main() -> wry::Result<()> {
     let window = WindowBuilder::new()
         .with_title("JdRead")
         .with_resizable(true)
+        .with_title_hidden(true)
         .with_titlebar_transparent(true)
         .with_fullsize_content_view(true)
         .with_titlebar_buttons_hidden(false)
-        .with_title_hidden(true)
         .with_menu(menu_bar_menu)
         .with_inner_size(wry::application::dpi::LogicalSize::new(1200.00, 728.00))
         .build(&event_loop)
@@ -108,12 +107,12 @@ fn main() -> wry::Result<()> {
 
     let _webview = WebViewBuilder::new(window)?
         .with_url("https://e.m.jd.com/")?
-        // .with_devtools(true)
+        .with_devtools(true)
         .with_initialization_script(script)
         .with_ipc_handler(handler)
         .build()?;
 
-    // _webview.open_devtools();
+    _webview.open_devtools();
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 

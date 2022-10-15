@@ -20,5 +20,5 @@ yarn
 yarn dev
 
 // 打包 App
-mkdir dist && yarn build
+yarn build
 ```
