@@ -6,7 +6,9 @@
   },
   "scripts": {
     "dev": "TAURI_SKIP_DEVSERVER_CHECK=true tauri dev",
-    "build": "mkdir dist && TAURI_SKIP_DEVSERVER_CHECK=true tauri build --target universal-apple-darwin",
+    "clean": "rimraf ./dist && mkdir dist",
+    "prebuild": "yarn run clean",
+    "build": "TAURI_SKIP_DEVSERVER_CHECK=true tauri build --target universal-apple-darwin",
     "tauri": "tauri"
   },
   "license": "MIT",
@@ -14,6 +16,7 @@
     "@tauri-apps/api": "^1.0.2"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.2"
+    "@tauri-apps/cli": "^1.0.2",
+    "rimraf": "^3.0.2"
   }
 }

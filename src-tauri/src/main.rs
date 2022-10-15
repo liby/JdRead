@@ -107,12 +107,12 @@ fn main() -> wry::Result<()> {
 
     let _webview = WebViewBuilder::new(window)?
         .with_url("https://e.m.jd.com/")?
-        .with_devtools(true)
+        // .with_devtools(true)
         .with_initialization_script(script)
         .with_ipc_handler(handler)
         .build()?;
 
-    _webview.open_devtools();
+    // _webview.open_devtools();
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 

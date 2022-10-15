@@ -5,7 +5,7 @@ description = "京东阅读"
 authors = ["liby"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "jd-read"
 edition = "2021"
 rust-version = "1.61.0"
 
