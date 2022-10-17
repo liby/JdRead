@@ -81,6 +81,24 @@ fn main() -> wry::Result<()> {
       topDom.addEventListener('touchstart', (e) => {
           window.ipc.postMessage('drag_window');
       })
+      
+      document.addEventListener('keyup', function (event) {
+        if (event.key == "ArrowUp" && event.metaKey){
+          scrollTo(0,0);
+        }
+        if (event.key == "ArrowDown" && event.metaKey){
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+        if (event.key == "ArrowLeft" && event.metaKey){
+          window.history.go(-1);
+        }
+        if (event.key == "ArrowRight" && event.metaKey){
+          window.history.go(1);
+        }
+        if (event.key == "r" && event.metaKey){
+          window.location.reload();
+        }
+      })
     });
   })();
   "#;
