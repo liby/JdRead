@@ -7,7 +7,7 @@ fn main() -> wry::Result<()> {
             keyboard::KeyCode,
             menu::{MenuBar as Menu, MenuItem, MenuItemAttributes, MenuType},
             platform::macos::WindowBuilderExtMacOS,
-            window::{Window, WindowBuilder},
+            window::{Fullscreen, Window, WindowBuilder},
         },
         webview::WebViewBuilder,
     };
@@ -39,22 +39,43 @@ fn main() -> wry::Result<()> {
     window.addEventListener('DOMContentLoaded', (event) => {
       const sheet = document.createElement('style');
       sheet.innerHTML = `
-        .panel .give_me .nav_view {
+        .panel.give_me .nav_view {
           top: 154px !important;
         }
         
+        .columns .column #header{
+          padding-top: 30px;
+        }
+        
+        #page .main_header {
+          padding-top: 20px;
+        }
+        
+        #page #footer-wrapper,
+        .drawing-board .toolbar .toolbar-action,
         .c-swiper-container,
         .download_entry,
-        .lang,
-        .copyright {
+        .lang, .copyright {
           display: none !important;
         }
-
+        
+        .container-with-note #home, .container-with-note #switcher{
+          top: 30px;
+        }
+        
+        .geist-page nav.dashboard_nav__PRmJv {
+          padding-top:10px;
+        }
+        
+        .geist-page .submenu button{
+          margin-top:24px;
+        }
+        
         #pack-top-dom:active {
           cursor: grabbing;
           cursor: -webkit-grabbing;
         }
-
+        
         #pack-top-dom{
           position:fixed;
           background:transparent;
@@ -80,6 +101,10 @@ fn main() -> wry::Result<()> {
 
       topDom.addEventListener('touchstart', (e) => {
           window.ipc.postMessage('drag_window');
+      })
+      
+      document.addEventListener('dblclick', (e) => {
+          window.ipc.postMessage('zoom');
       })
       
       document.addEventListener('keyup', function (event) {
@@ -116,11 +141,18 @@ fn main() -> wry::Result<()> {
         .build(&event_loop)
         .unwrap();
 
-    let handler = move |window: &Window, req: String| {
-        if req == "drag_window" {
-            println!("drag_window on");
+    let handler = move |window: &Window, req: String| match &*req {
+        "drag_window" => {
             let _ = window.drag_window();
         }
+        "zoom" => {
+            if window.is_maximized() {
+                window.set_maximized(false)
+            } else {
+                window.set_maximized(true)
+            }
+        }
+        _ => (),
     };
 
     let _webview = WebViewBuilder::new(window)?
