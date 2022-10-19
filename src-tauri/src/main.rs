@@ -7,7 +7,7 @@ fn main() -> wry::Result<()> {
             keyboard::KeyCode,
             menu::{MenuBar as Menu, MenuItem, MenuItemAttributes, MenuType},
             platform::macos::WindowBuilderExtMacOS,
-            window::{Fullscreen, Window, WindowBuilder},
+            window::{Window, WindowBuilder},
         },
         webview::WebViewBuilder,
     };
@@ -130,7 +130,6 @@ fn main() -> wry::Result<()> {
 
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
-        .with_title("JdRead")
         .with_resizable(true)
         .with_title_hidden(true)
         .with_titlebar_transparent(true)
