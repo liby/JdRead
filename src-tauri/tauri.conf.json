@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "JdRead",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "build": {
     "beforeBuildCommand": "",
@@ -50,11 +50,12 @@
     },
     "windows": [
       {
+        "url": "https://e.m.jd.com/",
+        "transparent": true,
         "fullscreen": false,
+        "width": 1200,
         "height": 728,
-        "resizable": true,
-        "title": "JdRead",
-        "width": 1200
+        "resizable": true
       }
     ]
   }

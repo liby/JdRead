@@ -1,17 +1,19 @@
-fn main() -> wry::Result<()> {
-    use wry::{
-        application::{
-            accelerator::{Accelerator, SysMods},
-            event::{Event, StartCause, WindowEvent},
-            event_loop::{ControlFlow, EventLoop},
-            keyboard::KeyCode,
-            menu::{MenuBar as Menu, MenuItem, MenuItemAttributes, MenuType},
-            platform::macos::WindowBuilderExtMacOS,
-            window::{Window, WindowBuilder},
-        },
-        webview::WebViewBuilder,
-    };
+use tauri_utils::config::{Config, WindowConfig};
+use wry::application::window::Fullscreen;
+use wry::{
+    application::{
+        accelerator::{Accelerator, SysMods},
+        event::{Event, StartCause, WindowEvent},
+        event_loop::{ControlFlow, EventLoop},
+        keyboard::KeyCode,
+        menu::{MenuBar as Menu, MenuItem, MenuItemAttributes, MenuType},
+        platform::macos::WindowBuilderExtMacOS,
+        window::{Window, WindowBuilder},
+    },
+    webview::WebViewBuilder,
+};
 
+fn main() -> wry::Result<()> {
     let mut menu_bar_menu = Menu::new();
     let mut first_menu = Menu::new();
 
@@ -34,109 +36,29 @@ fn main() -> wry::Result<()> {
 
     menu_bar_menu.add_submenu("App", true, first_menu);
 
-    let script = r#"
-  (function () {
-    window.addEventListener('DOMContentLoaded', (event) => {
-      const sheet = document.createElement('style');
-      sheet.innerHTML = `
-        .panel.give_me .nav_view {
-          top: 154px !important;
-        }
-        
-        .columns .column #header{
-          padding-top: 30px;
-        }
-        
-        #page .main_header {
-          padding-top: 20px;
-        }
-        
-        #page #footer-wrapper,
-        .drawing-board .toolbar .toolbar-action,
-        .c-swiper-container,
-        .download_entry,
-        .lang, .copyright {
-          display: none !important;
-        }
-        
-        .container-with-note #home, .container-with-note #switcher{
-          top: 30px;
-        }
-        
-        .geist-page nav.dashboard_nav__PRmJv {
-          padding-top:10px;
-        }
-        
-        .geist-page .submenu button{
-          margin-top:24px;
-        }
-        
-        #pack-top-dom:active {
-          cursor: grabbing;
-          cursor: -webkit-grabbing;
-        }
-        
-        #pack-top-dom{
-          position:fixed;
-          background:transparent;
-          top:0;
-          width:100%;
-          height:30px;
-          cursor: move;
-          cursor: grab;
-          cursor: -webkit-grab;
-        }
-      `;
-      document.head.append(sheet);
-      
-      const topDom = document.createElement("div");
-      topDom.id = "pack-top-dom"
-      document.body.appendChild(topDom);
-     
-      topDom.addEventListener('mousedown', (e) => {
-        if (e.buttons === 1 && e.detail !== 2) {
-          window.ipc.postMessage('drag_window');
-        }
-      })
-
-      topDom.addEventListener('touchstart', (e) => {
-          window.ipc.postMessage('drag_window');
-      })
-      
-      document.addEventListener('dblclick', (e) => {
-          window.ipc.postMessage('zoom');
-      })
-      
-      document.addEventListener('keyup', function (event) {
-        if (event.key == "ArrowUp" && event.metaKey){
-          scrollTo(0,0);
-        }
-        if (event.key == "ArrowDown" && event.metaKey){
-          window.scrollTo(0, document.body.scrollHeight);
-        }
-        if (event.key == "ArrowLeft" && event.metaKey){
-          window.history.go(-1);
-        }
-        if (event.key == "ArrowRight" && event.metaKey){
-          window.history.go(1);
-        }
-        if (event.key == "r" && event.metaKey){
-          window.location.reload();
-        }
-      })
-    });
-  })();
-  "#;
-
+    let WindowConfig {
+        url,
+        width,
+        height,
+        resizable,
+        transparent,
+        fullscreen,
+        ..
+    } = get_windows_config().unwrap_or_default();
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
-        .with_resizable(true)
-        .with_title_hidden(true)
-        .with_titlebar_transparent(true)
+        .with_resizable(resizable)
+        .with_titlebar_transparent(transparent)
+        .with_fullscreen(if fullscreen {
+            Some(Fullscreen::Borderless(None))
+        } else {
+            None
+        })
         .with_fullsize_content_view(true)
         .with_titlebar_buttons_hidden(false)
+        .with_title_hidden(true)
         .with_menu(menu_bar_menu)
-        .with_inner_size(wry::application::dpi::LogicalSize::new(1200.00, 728.00))
+        .with_inner_size(wry::application::dpi::LogicalSize::new(width, height))
         .build(&event_loop)
         .unwrap();
 
@@ -154,14 +76,18 @@ fn main() -> wry::Result<()> {
         _ => (),
     };
 
-    let _webview = WebViewBuilder::new(window)?
-        .with_url("https://e.m.jd.com/")?
-        // .with_devtools(true)
-        .with_initialization_script(script)
+    let webview = WebViewBuilder::new(window)?
+        .with_url(&url.to_string())?
+        .with_devtools(cfg!(feature = "devtools"))
+        .with_initialization_script(include_str!("pake.js"))
         .with_ipc_handler(handler)
         .build()?;
 
-    // _webview.open_devtools();
+    #[cfg(feature = "devtools")]
+    {
+        webview.open_devtools();
+    }
+
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 
@@ -177,11 +103,18 @@ fn main() -> wry::Result<()> {
                 ..
             } => {
                 if menu_id == close_item.clone().id() {
-                    _webview.window().set_minimized(true);
+                    webview.window().set_minimized(true);
                 }
                 println!("Clicked on {:?}", menu_id);
             }
             _ => (),
         }
     });
+}
+
+fn get_windows_config() -> Option<WindowConfig> {
+    let config_file = include_str!("../tauri.conf.json");
+    let config: Config = serde_json::from_str(config_file).expect("failed to parse windows config");
+
+    config.tauri.windows.first().cloned()
 }

@@ -1,6 +1,6 @@
 [package]
 name = "jd-read"
-version = "0.3.0"
+version = "0.4.0"
 description = "京东阅读"
 authors = ["liby"]
 license = ""
@@ -28,3 +28,5 @@ default = [ "custom-protocol" ]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]
+# Enable DevTools for debugging.
+devtools = []
